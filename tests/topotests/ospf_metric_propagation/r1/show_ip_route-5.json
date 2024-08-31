@@ -1,0 +1,18 @@
+{
+  "10.0.94.0/24":[
+    {
+      "prefix":"10.0.94.0/24",
+      "protocol":"bgp",
+      "vrfName":"green",
+      "metric":238,
+      "installed":true,
+      "nexthops":[
+        {
+          "ip":"10.0.1.2",
+          "interfaceName":"r1-eth0",
+          "vrf":"default"
+        }
+      ]
+    }
+  ]
+}

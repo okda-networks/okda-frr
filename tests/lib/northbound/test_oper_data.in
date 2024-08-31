@@ -1,0 +1,2 @@
+show yang operational-data /frr-test-module:frr-test-module
+test rpc
