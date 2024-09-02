@@ -57,6 +57,10 @@ ospfd_libfrrospf_a_SOURCES = \
 	ospfd/ospfd.c \
 	ospfd/ospf_gr_helper.c \
 	ospfd/ospf_auth.c \
+	ospfd/ospf_nb.c \
+	ospfd/ospf_nb_config.c \
+	ospfd/ospf_nb_state.c \
+	ospfd/ospf_nb_rpc.c \
 	# end
 
 if OSPFD
@@ -108,6 +112,7 @@ noinst_HEADERS += \
 	ospfd/ospf_vty.h \
 	ospfd/ospf_zebra.h \
 	ospfd/ospf_auth.h \
+	ospfd/ospf_nb.h \
 	# end
 
 ospfd_ospfd_LDADD = ospfd/libfrrospf.a ospfd/libfrrospfclient.a lib/libfrr.la $(LIBCAP) $(LIBM)
@@ -124,4 +129,5 @@ EXTRA_DIST += \
 
 nodist_ospfd_ospfd_SOURCES = \
 	yang/frr-ospf-route-map.yang.c \
+	yang/frr-ospfd.yang.c \
 	# end

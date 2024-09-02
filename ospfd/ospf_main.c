@@ -46,6 +46,8 @@
 #include "ospfd/ospf_ldp_sync.h"
 #include "ospfd/ospf_routemap_nb.h"
 #include "ospfd/ospf_apiserver.h"
+#include "lib/routing_nb.h"
+#include "ospfd/ospf_nb.h"
 
 #define OSPFD_STATE_NAME	 "%s/ospfd.json", frr_libstatedir
 #define OSPFD_INST_STATE_NAME(i) "%s/ospfd-%d.json", frr_runstatedir, i
@@ -131,8 +133,10 @@ static const struct frr_yang_module_info *const ospfd_yang_modules[] = {
 	&frr_filter_info,
 	&frr_interface_info,
 	&frr_route_map_info,
+	&frr_routing_info,
 	&frr_vrf_info,
 	&frr_ospf_route_map_info,
+	&frr_ospfd_info,
 	&ietf_key_chain_info,
 	&ietf_key_chain_deviation_info,
 };
