@@ -1,35 +1,104 @@
+#include "defaults.h"
 #include "northbound.h"
-#include "ospfd/ospf_nb.h"
 
-/*
- * XPath: /frr-routing:routing/control-plane-protocols/control-plane-protocol/frr-ospfd:ospf
- */
-int routing_control_plane_protocols_control_plane_protocol_ospf_create(
-	struct nb_cb_create_args *args)
+#include "ospfd/ospf_nb.h"
+#include "ospfd/ospfd.h"
+#include "ospfd/ospf_dump.h"
+#include "ospfd/ospf_interface.h"
+
+FRR_CFG_DEFAULT_BOOL(OSPF_LOG_ADJACENCY_CHANGES,
+		     {
+			     .val_bool = true,
+			     .match_profile = "datacenter",
+		     },
+		     { .val_bool = false }, );
+
+int routing_control_plane_protocols_name_validate(struct nb_cb_create_args *args)
 {
-	switch (args->event) {
-	case NB_EV_VALIDATE:
-	case NB_EV_PREPARE:
-	case NB_EV_ABORT:
-	case NB_EV_APPLY:
-		/* TODO: implement me. */
-		break;
+	const char *vrf_name;
+	const char *instance_str;
+	unsigned short instance = 0;
+	char *estr;
+
+	instance_str = yang_dnode_get_string(args->dnode, "name");
+	instance = strtoul(instance_str, &estr, 10);
+	vrf_name = yang_dnode_get_string(args->dnode, "vrf");
+
+	/* check instance number */
+	if (*estr != '\0') {
+		snprintf(args->errmsg, args->errmsg_len,
+			 "Invalid OSPF instance value");
+		return NB_ERR_VALIDATION;
+	}
+
+	/* check instance mode */
+	if (instance && !ospf_instance) {
+		snprintf(args->errmsg, args->errmsg_len,
+			 "OSPF is not running in instance mode");
+		return NB_ERR_VALIDATION;
+	} else if (!instance && ospf_instance) {
+		snprintf(args->errmsg, args->errmsg_len,
+			 "OSPF is running in instance mode");
+		return NB_ERR_VALIDATION;
+	}
+
+	/* check vrf on instance mode */
+	if (instance && strcmp(vrf_name, VRF_DEFAULT_NAME) != 0) {
+		snprintf(args->errmsg, args->errmsg_len,
+			 "VRF is not supported in instance mode");
+		return NB_ERR_VALIDATION;
 	}
 
 	return NB_OK;
 }
 
-int routing_control_plane_protocols_control_plane_protocol_ospf_destroy(
-	struct nb_cb_destroy_args *args)
+int routing_control_plane_protocols_ospf_create(struct nb_cb_create_args *args)
 {
-	switch (args->event) {
-	case NB_EV_VALIDATE:
-	case NB_EV_PREPARE:
-	case NB_EV_ABORT:
-	case NB_EV_APPLY:
-		/* TODO: implement me. */
-		break;
+	const char *vrf_name;
+	const char *instance_str;
+	unsigned short instance = 0;
+	bool created = false;
+	struct ospf *ospf;
+	char *estr;
+
+	vrf_name = yang_dnode_get_string(args->dnode, "vrf");
+	instance_str = yang_dnode_get_string(args->dnode, "name");
+	instance = strtoul(instance_str, &estr, 10);
+
+	/* Not my instance	*/
+	if (instance != ospf_instance)
+		return NB_OK;
+
+	ospf = ospf_get(instance, vrf_name, &created);
+	nb_running_set_entry(args->dnode, ospf);
+	if (created) {
+		if (DFLT_OSPF_LOG_ADJACENCY_CHANGES)
+			SET_FLAG(ospf->config, OSPF_LOG_ADJACENCY_CHANGES);
+	} else {
+		return NB_OK;
 	}
+
+	if (IS_DEBUG_OSPF_EVENT)
+		zlog_debug("Config command 'router ospf %d' received, vrf %s id %u oi_running %u",
+			   ospf->instance, ospf_get_name(ospf), ospf->vrf_id,
+			   ospf->oi_running);
+
+	return NB_OK;
+}
+
+int routing_control_plane_protocols_ospf_destroy(struct nb_cb_destroy_args *args)
+{
+	struct ospf *ospf;
+	unsigned short instance = 0;
+
+	instance = strtoul(yang_dnode_get_string(args->dnode, "name"), NULL, 10);
+
+	/* Not my instance */
+	if (instance != ospf_instance)
+		return NB_OK;
+
+	ospf = nb_running_unset_entry(args->dnode);
+	ospf_finish(ospf);
 
 	return NB_OK;
 }
@@ -45,6 +114,7 @@ int routing_control_plane_protocols_control_plane_protocol_ospf_use_arp_modify(
 	case NB_EV_PREPARE:
 	case NB_EV_ABORT:
 	case NB_EV_APPLY:
+		printf("hello ospf arp\n");
 		/* TODO: implement me. */
 		break;
 	}
