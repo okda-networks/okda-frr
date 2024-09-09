@@ -114,7 +114,6 @@ int routing_control_plane_protocols_control_plane_protocol_ospf_use_arp_modify(
 	case NB_EV_PREPARE:
 	case NB_EV_ABORT:
 	case NB_EV_APPLY:
-		printf("hello ospf arp\n");
 		/* TODO: implement me. */
 		break;
 	}
@@ -128,29 +127,48 @@ int routing_control_plane_protocols_control_plane_protocol_ospf_use_arp_modify(
 int routing_control_plane_protocols_control_plane_protocol_ospf_explicit_router_id_modify(
 	struct nb_cb_modify_args *args)
 {
-	switch (args->event) {
-	case NB_EV_VALIDATE:
-	case NB_EV_PREPARE:
-	case NB_EV_ABORT:
-	case NB_EV_APPLY:
-		/* TODO: implement me. */
-		break;
-	}
+	struct ospf *ospf;
+	struct listnode *node;
+	struct ospf_area *area;
 
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	ospf = nb_running_get_entry(args->dnode, NULL, true);
+	yang_dnode_get_ipv4(&ospf->router_id_static, args->dnode, NULL);
+
+	for (ALL_LIST_ELEMENTS_RO(ospf->areas, node, area))
+		if (area->full_nbrs) {
+			zlog_warn(
+				"For this router-id change to take effect, use \"clear ip ospf process\" command");
+			return NB_OK;
+		}
+
+	ospf_router_id_update(ospf);
 	return NB_OK;
 }
 
 int routing_control_plane_protocols_control_plane_protocol_ospf_explicit_router_id_destroy(
 	struct nb_cb_destroy_args *args)
 {
-	switch (args->event) {
-	case NB_EV_VALIDATE:
-	case NB_EV_PREPARE:
-	case NB_EV_ABORT:
-	case NB_EV_APPLY:
-		/* TODO: implement me. */
-		break;
-	}
+	struct ospf *ospf;
+	struct listnode *node;
+	struct ospf_area *area;
+
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	ospf = nb_running_get_entry(args->dnode, NULL, true);
+
+	ospf->router_id_static.s_addr = 0;
+
+	for (ALL_LIST_ELEMENTS_RO(ospf->areas, node, area))
+		if (area->full_nbrs) {
+			zlog_warn(
+				"For this router-id change to take effect, use \"clear ip ospf process\" command");
+			return CMD_SUCCESS;
+		}
+	ospf_router_id_update(ospf);
 
 	return NB_OK;
 }
