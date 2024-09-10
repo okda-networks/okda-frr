@@ -1562,13 +1562,6 @@ const struct frr_yang_module_info frr_ospfd_info = {
 			}
 		},
 		{
-			.xpath = "/frr-routing:routing/control-plane-protocols/control-plane-protocol/frr-ospfd:ospf",
-			.cbs = {
-				.create = routing_control_plane_protocols_control_plane_protocol_ospf_create,
-				.destroy = routing_control_plane_protocols_control_plane_protocol_ospf_destroy,
-			}
-		},
-		{
 			.xpath = "/frr-routing:routing/control-plane-protocols/control-plane-protocol/frr-ospfd:ospf/use-arp",
 			.cbs = {
 				.modify = routing_control_plane_protocols_control_plane_protocol_ospf_use_arp_modify,

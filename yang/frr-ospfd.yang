@@ -5701,7 +5701,6 @@ module frr-ospfd {
           "This container is only valid for the 'OSPF' routing
            protocol.";
       }
-      presence "Present if this instance of OSPF is running";
       description
         "Global ospf configuration and operational state.";
       uses route-ospf-attributes;

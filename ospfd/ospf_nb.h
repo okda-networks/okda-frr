@@ -3,6 +3,14 @@
 
 extern const struct frr_yang_module_info frr_ospfd_info;
 
+/*
+ * Callback registered with routing_nb lib to validate the
+ * instance of ospf
+ */
+int routing_control_plane_protocols_name_validate(struct nb_cb_create_args *args);
+int routing_control_plane_protocols_ospf_create(struct nb_cb_create_args *args);
+int routing_control_plane_protocols_ospf_destroy(struct nb_cb_destroy_args *args);
+
 /* prototypes */
 int lib_interface_ospf_create(struct nb_cb_create_args *args);
 int lib_interface_ospf_destroy(struct nb_cb_destroy_args *args);
@@ -767,10 +775,6 @@ lib_interface_ospf_state_database_link_scope_lsa_type_link_scope_lsas_link_scope
 struct yang_data *
 lib_interface_ospf_state_database_link_scope_lsa_type_link_scope_lsas_link_scope_lsa_ospfv2_body_opaque_extended_link_opaque_extended_link_tlv_unknown_tlvs_unknown_tlv_value_get_elem(
 	struct nb_cb_get_elem_args *args);
-int routing_control_plane_protocols_control_plane_protocol_ospf_create(
-	struct nb_cb_create_args *args);
-int routing_control_plane_protocols_control_plane_protocol_ospf_destroy(
-	struct nb_cb_destroy_args *args);
 int routing_control_plane_protocols_control_plane_protocol_ospf_use_arp_modify(
 	struct nb_cb_modify_args *args);
 int routing_control_plane_protocols_control_plane_protocol_ospf_explicit_router_id_modify(
